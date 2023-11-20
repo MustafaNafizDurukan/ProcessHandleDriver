@@ -1,17 +1,45 @@
 #include <Windows.h>
 #include <stdio.h>
-#include "..\ProcessHandle\ProcessHandleCommon.h"
+#include <Psapi.h>
+#include "..\ProcessHandleDriver\ProcessHandleCommon.h"
 
+void DumpProcessModules(HANDLE hProcess) {
+	HMODULE h[4096];
+	DWORD needed;
 
+	if (!EnumProcessModulesEx(hProcess, h, sizeof(h), &needed, LIST_MODULES_ALL))
+		return;
+
+	DWORD count = needed / sizeof(HMODULE);
+	printf("%u modules\n", count);
+
+	WCHAR name[MAX_PATH];
+	for (int i = 0; i < count; i++) {
+		printf("HModule: 0x%p", h[i]);
+		if (GetModuleBaseName(hProcess, h[i], name, _countof(name))) {
+			printf(" %ws", name);
+		}
+		printf("\n");
+	}
+}
 
 int main(int argc, const char* argv[])
 {
-	printf("IOCTL OPEN Process: (%u)\n", IOCTL_OPEN_PROCESS);
-
 	if (argc != 2) {
 		printf("Usage: test <pid>\n");
 		return 0;
 	}
+
+	int pid = atoi(argv[1]);
+
+	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
+	if (hProcess) {
+		DumpProcessModules(hProcess);
+		CloseHandle(hProcess);
+		return 0;
+	}
+
+	printf("Failed to open process with OpenProcess (%u)\n", GetLastError());
 
 	HANDLE hDevice = CreateFile(L"\\\\.\\ProcessHandle", GENERIC_WRITE | GENERIC_READ, 0, nullptr, OPEN_EXISTING, 0, nullptr);
 	if (hDevice == INVALID_HANDLE_VALUE) {
@@ -20,7 +48,7 @@ int main(int argc, const char* argv[])
 	}
 
 	ProcessHandleInput input;
-	input.ProcessId = atoi(argv[1]);
+	input.ProcessId = pid;
 
 	ProcessHandleOutput output;
 	DWORD bytes;
@@ -30,6 +58,10 @@ int main(int argc, const char* argv[])
 		return 1;
 	}
 
-	printf("Success");
+	printf("Success\n\n");
+
+	DumpProcessModules(output.hProcess);
+	CloseHandle(output.hProcess);
+
 	CloseHandle(hDevice);
 }

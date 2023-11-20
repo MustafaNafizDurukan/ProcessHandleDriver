@@ -69,7 +69,7 @@ NTSTATUS ProcessHandleDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			status = STATUS_INVALID_PARAMETER;
 			break;
 		}
-		if (dic.InputBufferLength != sizeof(ProcessHandleInput) || dic.OutputBufferLength != sizeof(ProcessHandleInput)) {
+		if (dic.InputBufferLength < sizeof(ProcessHandleInput) || dic.OutputBufferLength < sizeof(ProcessHandleInput)) {
 			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
@@ -99,7 +99,7 @@ NTSTATUS ProcessHandleDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 }
 
 NTSTATUS ProcessHandleCreateClose(PDEVICE_OBJECT, PIRP Irp) {
-	Irp->IoStatus.Status = STATUS_ACCESS_DENIED;
+	Irp->IoStatus.Status = STATUS_SUCCESS;
 	Irp->IoStatus.Information = 0;
 	IoCompleteRequest(Irp, 0);
 
