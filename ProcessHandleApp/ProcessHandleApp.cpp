@@ -41,7 +41,7 @@ int main(int argc, const char* argv[])
 
 	printf("Failed to open process with OpenProcess (%u)\n", GetLastError());
 
-	HANDLE hDevice = CreateFile(L"\\\\.\\ProcessHandle", GENERIC_WRITE | GENERIC_READ, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+	HANDLE hDevice = CreateFile(PROCHANDLE_LINKNAME_APP, GENERIC_WRITE | GENERIC_READ, 0, nullptr, OPEN_EXISTING, 0, nullptr);
 	if (hDevice == INVALID_HANDLE_VALUE) {
 		printf("Error opening device: (%u)", GetLastError());
 		return 1;

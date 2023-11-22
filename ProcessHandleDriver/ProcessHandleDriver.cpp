@@ -25,7 +25,7 @@ extern "C" NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING Reg
 	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = ProcessHandleDeviceControl;
 
 	UNICODE_STRING devName;
-	RtlInitUnicodeString(&devName, L"\\Device\\ProcessHandle");
+	RtlInitUnicodeString(&devName, PROCHANDLE_DEVICENAME_DRV);
 
 	PDEVICE_OBJECT DeviceObject;
 	status = IoCreateDevice(DriverObject, 0, &devName, FILE_DEVICE_UNKNOWN, 0, FALSE, &DeviceObject);
@@ -37,7 +37,7 @@ extern "C" NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING Reg
 	DeviceObject->Flags |= DO_BUFFERED_IO;
 
 	UNICODE_STRING symName;
-	RtlInitUnicodeString(&symName, L"\\??\\ProcessHandle");
+	RtlInitUnicodeString(&symName, PROCHANDLE_LINKNAME_DRV);
 
 	status = IoCreateSymbolicLink(&symName, &devName);
 	if (!NT_SUCCESS(status)) {
@@ -52,7 +52,7 @@ void ProcessHandleUnload(PDRIVER_OBJECT DriverObject) {
 	KdPrint(("ProcessHandle: Unload\n"));
 
 	UNICODE_STRING symName;
-	RtlInitUnicodeString(&symName, L"\\??\\ProcessHandle");
+	RtlInitUnicodeString(&symName, PROCHANDLE_LINKNAME_DRV);
 	IoDeleteSymbolicLink(&symName);
 
 	IoDeleteDevice(DriverObject->DeviceObject);
