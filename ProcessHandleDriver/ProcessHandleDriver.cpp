@@ -34,6 +34,8 @@ extern "C" NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING Reg
 		return status;
 	}
 
+	DeviceObject->Flags |= DO_BUFFERED_IO;
+
 	UNICODE_STRING symName;
 	RtlInitUnicodeString(&symName, L"\\??\\ProcessHandle");
 
